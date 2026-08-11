@@ -1,21 +1,3 @@
-# azure-handson-basic
----
-lab:
-  title: 'Lab 00: 90分で学ぶ Azure の基礎'
-  module: Azure Fundamentals Quick Start
-  description: 90分で Azure の 4 本柱（リソース管理・ネットワーク・仮想マシン・ストレージ）をポータルで一気に体験します。
-  duration: 90 minutes
-  level: 100
-  islab: true
-  primarytopics:
-    - Azure
-    - Resource groups
-    - Virtual networks
-    - Virtual machines
-    - Azure storage
-    - Networking
----
-
 # Lab 00 - 90分で学ぶ Azure の基礎
 
 ## このハンズオンについて
