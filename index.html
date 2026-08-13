@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 00 - 90分で学ぶ Azure の基礎</title>
+<style>
+  :root {
+    --azure: #0078d4;
+    --azure-dark: #005a9e;
+    --azure-light: #e6f2fb;
+    --bg: #f3f6f9;
+    --card: #ffffff;
+    --text: #24292f;
+    --muted: #57606a;
+    --border: #d0d7de;
+    --success: #1a7f37;
+    --success-bg: #dafbe1;
+    --note-bg: #fff8e6;
+    --note-border: #d4a72c;
+    --tip-bg: #e6f2fb;
+    --tip-border: #0078d4;
+    --warn-bg: #ffebe9;
+    --warn-border: #cf222e;
+    --code-bg: #1e1e1e;
+    --code-text: #d4d4d4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  a { color: var(--azure); }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--azure) 0%, var(--azure-dark) 100%);
+    color: #fff;
+    padding: 40px 24px 32px;
+    text-align: center;
+  }
+  header .lab-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+  }
+  header h1 { margin: 0 0 12px; font-size: 2rem; }
+  header p { margin: 0 auto; max-width: 720px; opacity: 0.95; }
+  header .meta {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  header .meta span {
+    background: rgba(255,255,255,0.15);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    padding: 14px 0 10px;
+    margin-bottom: 8px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .progress-info strong { color: var(--azure-dark); }
+  .progress-bar {
+    height: 10px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-bar > div {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--azure), var(--success));
+    transition: width 0.4s ease;
+  }
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 3px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .reset-btn:hover { background: #fff; color: var(--text); }
+
+  /* Intro card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h2 { margin-top: 0; color: var(--azure-dark); }
+  .pillars { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .pillars li {
+    padding: 12px 16px;
+    background: var(--azure-light);
+    border-left: 4px solid var(--azure);
+    border-radius: 6px;
+  }
+  .pillars li b { color: var(--azure-dark); }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.94rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--azure-light); color: var(--azure-dark); font-weight: 600; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  td code, th code, p code, li code {
+    background: #eef1f4;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    color: #b31d28;
+  }
+
+  /* Task accordion */
+  .task {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .task-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--card);
+    transition: background 0.15s;
+  }
+  .task-head:hover { background: #f6f8fa; }
+  .task.done .task-head { background: var(--success-bg); }
+  .task-num {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--azure);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .task.done .task-num { background: var(--success); }
+  .task-title { flex: 1; }
+  .task-title h3 { margin: 0; font-size: 1.12rem; }
+  .task-title .time { font-size: 0.82rem; color: var(--muted); }
+  .task-chevron {
+    flex-shrink: 0;
+    transition: transform 0.25s;
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  .task.open .task-chevron { transform: rotate(90deg); }
+  .task-body {
+    display: none;
+    padding: 4px 24px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .task.open .task-body { display: block; }
+  .task-intro {
+    color: var(--muted);
+    background: #f6f8fa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+  }
+
+  /* Steps with checkboxes */
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 4px 0 14px 44px;
+    margin-bottom: 4px;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 26px;
+    height: 26px;
+    background: var(--azure-light);
+    color: var(--azure-dark);
+    border: 1px solid var(--azure);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  /* Admonitions */
+  .adm {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 0.93rem;
+  }
+  .adm .adm-label { font-weight: 700; display: block; margin-bottom: 2px; }
+  .adm.note { background: var(--note-bg); border-left: 4px solid var(--note-border); }
+  .adm.tip { background: var(--tip-bg); border-left: 4px solid var(--tip-border); }
+  .adm.warn { background: var(--warn-bg); border-left: 4px solid var(--warn-border); }
+  .adm.note .adm-label { color: #9a6700; }
+  .adm.tip .adm-label { color: var(--azure-dark); }
+  .adm.warn .adm-label { color: var(--warn-border); }
+  .adm ol { margin: 6px 0 0; padding-left: 20px; }
+
+  /* Code block */
+  .code {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    overflow-x: auto;
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.88rem;
+  }
+  .code pre { margin: 0; white-space: pre; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #333;
+    color: #ddd;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: #444; color: #fff; }
+  .copy-btn.copied { background: var(--success); color: #fff; border-color: var(--success); }
+
+  /* Task complete toggle */
+  .complete-row {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .complete-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--success);
+    user-select: none;
+  }
+  .complete-row input { width: 20px; height: 20px; accent-color: var(--success); cursor: pointer; }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 30px 20px;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="lab-badge">LAB 00 · AZ-104 入門</span>
+  <h1>90分で学ぶ Azure の基礎</h1>
+  <p>Azure をはじめて触る方が約 90 分で主要サービスを体験する入門ラボ。クラウド管理者に必須の「4 本柱」を 1 つのシナリオでつなげて学び、最後に課金を止めるところまで確実に体験します。</p>
+  <div class="meta">
+    <span>⏱ 所要時間 約 90 分</span>
+    <span>🌐 リージョン: East US</span>
+    <span>💳 Azure サブスクリプション（無料可）</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span><strong id="progress-count">0</strong> / 6 タスク完了</span>
+      <button class="reset-btn" id="reset-btn">進捗をリセット</button>
+    </div>
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+  </div>
+
+  <!-- Intro -->
+  <div class="card">
+    <h2>このハンズオンについて</h2>
+    <p>AZ-104 の各ラボ（各 50 分）を短縮・再構成し、クラウド管理者に必須の「4 本柱」を 1 つのシナリオでつなげて学びます。</p>
+    <ul class="pillars">
+      <li><b>リソースの整理</b> … リソース グループとタグ</li>
+      <li><b>ネットワーク</b> … 仮想ネットワーク（VNet）とサブネット、ネットワーク セキュリティ グループ（NSG）</li>
+      <li><b>コンピューティング</b> … 仮想マシン（Linux Web サーバー）</li>
+      <li><b>ストレージ</b> … ストレージ アカウントと Blob コンテナー</li>
+    </ul>
+    <div class="adm note">
+      <span class="adm-label">必要なもの</span>
+      有効な Azure サブスクリプション（無料アカウントでも可）。手順は <b>East US</b> リージョンを前提にしていますが、任意のリージョンに変更できます。サブスクリプションの種類によっては一部の機能や SKU の可用性が異なる場合があります。
+    </div>
+  </div>
+
+  <!-- Time table -->
+  <div class="card">
+    <h2>所要時間の目安</h2>
+    <table>
+      <thead><tr><th>ステップ</th><th>内容</th><th>目安時間</th></tr></thead>
+      <tbody>
+        <tr><td>Task 1</td><td>リソース グループとタグを作成する</td><td>約 10 分</td></tr>
+        <tr><td>Task 2</td><td>仮想ネットワーク（VNet）とサブネットを作成する</td><td>約 15 分</td></tr>
+        <tr><td>Task 3</td><td>仮想マシン（Web サーバー）を作成する</td><td>約 20 分</td></tr>
+        <tr><td>Task 4</td><td>NSG でポートを開き Web ページを公開する</td><td>約 13 分</td></tr>
+        <tr><td>Task 5</td><td>ストレージ アカウントと Blob を作成する</td><td>約 15 分</td></tr>
+        <tr><td>Task 6</td><td>リソースをまとめて削除する（重要）</td><td>約 12 分</td></tr>
+      </tbody>
+    </table>
+    <h2 style="margin-top:24px;">シナリオ</h2>
+    <p>あなたは新しくクラウド管理者になりました。まずは検証用のネットワークを設計し、その中に Web サーバーとファイル保管用のストレージを Azure 上に用意し、動作を確認してから安全に片付ける、という一連の作業を通じて Azure の基本操作を身につけます。</p>
+  </div>
+
+  <!-- ============ TASK 1 ============ -->
+  <div class="task" id="task1">
+    <div class="task-head">
+      <div class="task-num">1</div>
+      <div class="task-title">
+        <h3>リソース グループとタグを作成する</h3>
+        <span class="time">⏱ 約 10 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro">Azure のすべてのリソースは <b>リソース グループ</b> という「入れ物」に入ります。まずこの入れ物を作り、後片付けを簡単にします。</div>
+      <ol class="steps">
+        <li><b>Azure ポータル</b> にサインインします — <a href="https://portal.azure.com" target="_blank" rel="noopener">https://portal.azure.com</a></li>
+        <li>ポータル上部の検索ボックスで <code>リソース グループ</code>（または <code>Resource groups</code>）を検索し、選択します。</li>
+        <li><b>＋ 作成</b> を選択します。</li>
+        <li><b>基本</b> タブで、次の値を指定します。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>サブスクリプション</td><td>お使いの Azure サブスクリプション</td></tr>
+              <tr><td>リソース グループ</td><td><code>rg-az104-userNN</code></td></tr>
+              <tr><td>リージョン</td><td><b>(US) East US</b></td></tr>
+            </tbody>
+          </table>
+          <div class="adm note"><span class="adm-label">Note</span><code>NN</code> は自分の受講者番号（<code>01</code>〜<code>10</code>）に置き換えてください。例: 3 番目の受講者なら <code>rg-az104-user03</code>。複数名で同じサブスクリプションを共有してもリソース グループが分かれるため、互いのリソースが混ざりません。以降のタスクでも同じリソース グループ名を使用します。</div>
+        </li>
+        <li><b>タグ</b> タブに移動し、次のタグを追加します。タグはコスト管理やリソースの整理に使う「ラベル」です。
+          <table>
+            <thead><tr><th>名前</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td><code>env</code></td><td><code>handson</code></td></tr>
+              <tr><td><code>owner</code></td><td>あなたの名前やメールなど</td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li><b>確認および作成</b> → <b>作成</b> を選択します。</li>
+        <li>作成が完了したら、通知から <b>リソース グループに移動</b> を選択し、<b>概要</b> ページでタグが設定されていることを確認します。</li>
+      </ol>
+      <div class="adm tip"><span class="adm-label">ポイント</span>リソース グループ単位でまとめて削除できるため、ハンズオンや検証では「専用のリソース グループ」を作るのが後片付けのコツです。</div>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 1 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- ============ TASK 2 ============ -->
+  <div class="task" id="task2">
+    <div class="task-head">
+      <div class="task-num">2</div>
+      <div class="task-title">
+        <h3>仮想ネットワーク（VNet）とサブネットを作成する</h3>
+        <span class="time">⏱ 約 15 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro"><b>仮想ネットワーク（VNet）</b> は、Azure 上に作る「あなた専用のプライベート ネットワーク」です。VM などのリソースは VNet の中の <b>サブネット</b> に配置され、互いに通信できます。ここでは次の Task で作る VM を入れるための VNet とサブネットを先に用意します。</div>
+      <ol class="steps">
+        <li>ポータルの検索ボックスで <code>仮想ネットワーク</code>（または <code>Virtual networks</code>）を検索して選択し、<b>＋ 作成</b> を選択します。</li>
+        <li><b>基本</b> タブで、次の値を指定します。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>リソース グループ</td><td><b>rg-az104-userNN</b>（Task 1 で作成したもの）</td></tr>
+              <tr><td>仮想ネットワーク名</td><td><code>vnet-az104-userNN</code></td></tr>
+              <tr><td>リージョン</td><td><b>(US) East US</b></td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li><b>セキュリティ</b> タブに移動します。<b>このハンズオンではすべて無効（既定値）のまま</b> にして先に進みますが、それぞれの役割を理解しておきましょう。
+          <table>
+            <thead><tr><th>セキュリティ機能</th><th>役割</th><th>このラボでの設定</th></tr></thead>
+            <tbody>
+              <tr><td>仮想ネットワークの暗号化</td><td>VNet 内を流れるトラフィックを自動で暗号化します（対応 VM・高速ネットワークが必要）。</td><td>無効（オフのまま）</td></tr>
+              <tr><td>Azure Bastion</td><td>パブリック IP なしで、ブラウザーから VM に安全に RDP/SSH 接続できるマネージド サービス（有料）。</td><td>無効（オフのまま）</td></tr>
+              <tr><td>Azure Firewall</td><td>VNet を保護するクラウドベースのマネージド ファイアウォール。送受信トラフィックを一元的に制御します（有料）。</td><td>無効（オフのまま）</td></tr>
+              <tr><td>Azure DDoS ネットワーク保護</td><td>DDoS 攻撃から VNet 内のリソースを守る高度な保護サービス（有料）。</td><td>無効（オフのまま）</td></tr>
+            </tbody>
+          </table>
+          <div class="adm tip"><span class="adm-label">ポイント</span>これらは「後からでも有効化できる」追加のセキュリティ層です。実運用では、VM への安全な接続に <b>Azure Bastion</b>、通信の集中制御に <b>Azure Firewall</b>、公開サービスの保護に <b>DDoS 保護</b> を検討します。いずれも課金が発生するため、検証環境では既定の無効のままにしておくのが安全です。なお、サブネット単位の通信制御は Task 4 で扱う <b>ネットワーク セキュリティ グループ（NSG）</b> で行います（NSG は無料で使えます）。</div>
+        </li>
+        <li><b>アドレス空間</b> タブに移動します。<b>IPv4 アドレス空間</b> が <code>10.0.0.0/16</code> になっていることを確認します（既定値のままで構いません）。</li>
+        <li>既定のサブネット（<code>default</code>）を選択し、名前を <code>subnet-web</code>、サブネット アドレス範囲を <code>10.0.1.0/24</code> に設定します。
+          <div class="adm tip"><span class="adm-label">ポイント</span><code>/16</code> の VNet には約 65,000 個、<code>/24</code> のサブネットには約 250 個の IP アドレスが含まれます。各サブネットでは Azure が 5 つの IP アドレスを予約します。</div>
+        </li>
+        <li><b>確認および作成</b> → <b>作成</b> を選択します。</li>
+        <li>デプロイ完了後、<b>リソースに移動</b> を選択し、<b>サブネット</b> ページで <code>subnet-web</code> が作成されていることを確認します。</li>
+      </ol>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 2 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- ============ TASK 3 ============ -->
+  <div class="task" id="task3">
+    <div class="task-head">
+      <div class="task-num">3</div>
+      <div class="task-title">
+        <h3>仮想マシン（Web サーバー）を作成する</h3>
+        <span class="time">⏱ 約 20 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro">Azure で最も基本的なコンピューティング リソースである <b>仮想マシン（VM）</b> を作成します。ここでは Ubuntu Linux を使い、Task 2 で作成した VNet に配置して、後のタスクで Web サーバーとして公開します。</div>
+      <ol class="steps">
+        <li>ポータルの検索ボックスで <code>仮想マシン</code>（または <code>Virtual machines</code>）を検索して選択し、<b>＋ 作成</b> → <b>Azure 仮想マシン</b> を選択します。</li>
+        <li><b>基本</b> タブで、次の値を指定します（記載のないものは既定値のままにします）。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>リソース グループ</td><td><b>rg-az104-userNN</b>（Task 1 で作成したもの）</td></tr>
+              <tr><td>仮想マシン名</td><td><code>vm-web-az104-userNN</code></td></tr>
+              <tr><td>リージョン</td><td><b>(US) East US</b></td></tr>
+              <tr><td>可用性オプション</td><td>インフラストラクチャ冗長は必要ありません</td></tr>
+              <tr><td>セキュリティの種類</td><td><b>トラステッド起動の仮想マシン</b>（既定のまま）</td></tr>
+              <tr><td>イメージ</td><td><b>Ubuntu Server 24.04 LTS</b>（表示があるバージョンで可）</td></tr>
+              <tr><td>VM アーキテクチャ</td><td><b>x64</b></td></tr>
+              <tr><td>サイズ</td><td><code>Standard_D2als_v7</code>（小さめで十分です）</td></tr>
+              <tr><td>認証の種類</td><td><b>パスワード</b></td></tr>
+              <tr><td>ユーザー名</td><td><code>azureuser</code></td></tr>
+              <tr><td>パスワード</td><td>12 文字以上の任意の強力なパスワード（メモしておく）</td></tr>
+            </tbody>
+          </table>
+          <div class="adm note"><span class="adm-label">Note</span>SKU が利用できない、またはクォータ超過で失敗する場合は、サイズや <b>リージョン</b> を変更してください。</div>
+        </li>
+        <li>同じ <b>基本</b> タブの <b>受信ポートの規則</b> で、<b>パブリック受信ポート</b> は <b>選択したポートを許可する</b> を選び、<b>SSH (22)</b> を選択します。
+          <div class="adm note"><span class="adm-label">Note</span>学習環境のため SSH を公開しています。本番環境では <b>Azure Bastion</b> や <b>Just-in-Time アクセス</b> の利用を検討してください。</div>
+        </li>
+        <li><b>ディスク</b> タブに移動します。<b>OS ディスクの種類</b> で <b>Standard SSD</b> を選択します（<b>VM と共に削除</b> はオンのまま）。</li>
+        <li><b>ネットワーク</b> タブに移動し、Task 2 で作成したネットワークを指定します（記載のないものは既定値のままにします）。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>仮想ネットワーク</td><td><b>vnet-az104-userNN</b></td></tr>
+              <tr><td>サブネット</td><td><b>subnet-web (10.0.1.0/24)</b></td></tr>
+              <tr><td>パブリック IP</td><td>既定値（新規作成）のまま</td></tr>
+              <tr><td>NIC ネットワーク セキュリティ グループ</td><td><b>基本</b></td></tr>
+              <tr><td>パブリック受信ポート</td><td><b>選択したポートを許可する</b></td></tr>
+              <tr><td>受信ポートの選択</td><td><b>SSH (22)</b></td></tr>
+              <tr><td>VM が削除されたときにパブリック IP と NIC を削除する</td><td>オフ（既定のまま）</td></tr>
+              <tr><td>高速ネットワークを有効にする</td><td>既定のまま（このサイズでは自動でオン／グレーアウト）</td></tr>
+              <tr><td>負荷分散のオプション</td><td><b>なし</b></td></tr>
+            </tbody>
+          </table>
+          <div class="adm tip"><span class="adm-label">ポイント</span>仮想ネットワークに <b>vnet-az104-userNN</b> が自動で選ばれない場合は、リージョンが VNet と同じ <b>East US</b> になっているか確認してください。VNet と VM のリージョンは一致している必要があります。</div>
+        </li>
+        <li>他のタブは既定値のまま進めます。<b>確認および作成</b> → <b>作成</b> を選択します。</li>
+        <li>デプロイには数分かかります。完了したら <b>リソースに移動</b> を選択します。</li>
+        <li><b>概要</b> ページで <b>パブリック IP アドレス</b> をメモします（Task 4 で使用します）。</li>
+      </ol>
+
+      <hr>
+      <h4>VM に接続して Web サーバー（NGINX）を導入する</h4>
+      <p>ここでは追加ツール不要でブラウザーから使える <b>Cloud Shell</b> を利用します。</p>
+      <ol class="steps">
+        <li>ポータル上部のツールバーで <b>Cloud Shell</b> アイコン（<code>&gt;_</code>）を選択します。初回は <b>Bash</b> を選びます。<b>作業の開始</b> 画面では <b>ストレージ アカウントは不要です</b> を選び、<b>サブスクリプション</b> を選択して <b>適用</b> します（このラボでは SSH コマンドを実行するだけなので、ストレージのマウントは不要です）。</li>
+        <li>Cloud Shell で次のコマンドを実行し、VM に SSH 接続します（<code>&lt;パブリックIP&gt;</code> は先ほどメモした値に置き換えます）。
+          <div class="code"><button class="copy-btn">コピー</button><pre>ssh azureuser@&lt;パブリックIP&gt;</pre></div>
+          初回接続時のフィンガープリント確認では <code>yes</code> を入力し、続けて設定したパスワードを入力します。
+        </li>
+        <li>VM に接続できたら、次のコマンドで NGINX Web サーバーをインストールします。
+          <div class="code"><button class="copy-btn">コピー</button><pre>sudo apt-get update &amp;&amp; sudo apt-get install -y nginx</pre></div>
+        </li>
+        <li>トップページを分かりやすい内容に書き換えます。
+          <div class="code"><button class="copy-btn">コピー</button><pre>echo "&lt;h1&gt;Hello Azure! This is vm-web-az104-userNN&lt;/h1&gt;" | sudo tee /var/www/html/index.html</pre></div>
+        </li>
+        <li><code>exit</code> と入力して SSH 接続を終了します。
+          <div class="adm note"><span class="adm-label">Note</span>この時点ではまだブラウザーから見えません。次の Task で <b>NSG のポート 80 を開放</b> します。</div>
+        </li>
+      </ol>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 3 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- ============ TASK 4 ============ -->
+  <div class="task" id="task4">
+    <div class="task-head">
+      <div class="task-num">4</div>
+      <div class="task-title">
+        <h3>NSG でポートを開き Web ページを公開する</h3>
+        <span class="time">⏱ 約 13 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro"><b>ネットワーク セキュリティ グループ（NSG）</b> は、リソースへの通信を許可・拒否するファイアウォールのようなものです。HTTP（ポート 80）を許可して Web ページを公開します。</div>
+      <ol class="steps">
+        <li><b>vm-web-az104-userNN</b> の画面左メニューで、<b>ネットワーク</b> → <b>ネットワークの設定</b>（または <b>ネットワーク設定</b>）を選択します。</li>
+        <li><b>ポートのルールの作成</b> → <b>受信ポートのルール</b> を選択します。</li>
+        <li><b>受信セキュリティ規則の追加</b> ウィンドウで、次の値を指定します（記載のないものは既定値のまま）。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>ソース</td><td><b>Any</b></td></tr>
+              <tr><td>ソース ポート範囲</td><td><code>*</code></td></tr>
+              <tr><td>宛先</td><td><b>Any</b></td></tr>
+              <tr><td>サービス</td><td><b>Custom</b></td></tr>
+              <tr><td>宛先ポート範囲</td><td><code>80</code></td></tr>
+              <tr><td>プロトコル</td><td><b>TCP</b></td></tr>
+              <tr><td>アクション</td><td><b>許可</b></td></tr>
+              <tr><td>優先度</td><td><code>310</code></td></tr>
+              <tr><td>名前</td><td><code>Allow-HTTP</code></td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li><b>追加</b> を選択し、ルールが一覧に表示されることを確認します。</li>
+        <li>新しいブラウザー タブを開き、<code>http://&lt;パブリックIP&gt;</code> にアクセスします。</li>
+        <li><b>Hello Azure! This is vm-web-az104-userNN</b> と表示されれば成功です。
+          <div class="adm tip"><span class="adm-label">ポイント</span>表示されない場合は、(1) NGINX が起動しているか（<code>systemctl status nginx</code>）、(2) NSG のポート 80 が <b>許可</b> になっているか、(3) URL が <code>https</code> ではなく <code>http</code> か、を確認します。</div>
+        </li>
+      </ol>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 4 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- ============ TASK 5 ============ -->
+  <div class="task" id="task5">
+    <div class="task-head">
+      <div class="task-num">5</div>
+      <div class="task-title">
+        <h3>ストレージ アカウントと Blob を作成する</h3>
+        <span class="time">⏱ 約 15 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro">Azure でファイルやデータを保存する基本サービスが <b>ストレージ アカウント</b> です。ここに <b>Blob コンテナー</b> を作り、ファイルをアップロードします。</div>
+      <ol class="steps">
+        <li>ポータルの検索ボックスで <code>ストレージ アカウント</code>（または <code>Storage accounts</code>）を検索して選択し、<b>＋ 作成</b> を選択します。</li>
+        <li><b>基本</b> タブで、次の値を指定します（記載のないものは既定値のまま）。
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>サブスクリプション</td><td>自分のサブスクリプション</td></tr>
+              <tr><td>リソース グループ</td><td><b>rg-az104-userNN</b>（Task 1 で作成したもの）</td></tr>
+              <tr><td>ストレージ アカウント名</td><td>3〜24 文字の英小文字と数字で、グローバルに一意な名前（例: <code>staz104userNN</code>）</td></tr>
+              <tr><td>リージョン</td><td><b>(US) East US</b></td></tr>
+              <tr><td>優先ストレージの種類</td><td><b>Azure Blob Storage または Azure Data Lake Storage</b></td></tr>
+              <tr><td>パフォーマンス</td><td><b>Standard</b>（ほとんどのシナリオに対して推奨される 汎用 v2 アカウント）</td></tr>
+              <tr><td>冗長性</td><td><b>ローカル冗長ストレージ (LRS)</b>（学習用のため安価な LRS を選択）</td></tr>
+            </tbody>
+          </table>
+        </li>
+        <li><b>レビューと作成</b> を選択し、検証の完了後に <b>作成</b> を選択します。デプロイ完了後、<b>リソースに移動</b> を選択します。</li>
+        <li>左メニューで <b>データ ストレージ</b> → <b>コンテナー</b> を選択し、<b>＋ コンテナー</b> を選択します。</li>
+        <li>名前に <code>handson-files</code> と入力し、<b>作成</b> を選択します。
+          <div class="adm note"><span class="adm-label">Note</span>既定ではコンテナーは非公開（匿名アクセス不可）です。これは安全な既定値です。</div>
+        </li>
+        <li>作成した <b>handson-files</b> コンテナーを開き、<b>アップロード</b> を選択します。
+          <div class="adm warn">
+            <span class="adm-label">トラブルシューティング</span>
+            コンテナーを開いたときに <b>「このリクエストは、この操作を実行する承認がありません」（エラー コード 403）</b> と表示される場合は、ストレージ アカウントの <b>ファイアウォール（ネットワーク アクセス制限）</b> でアクセスがブロックされています。次の手順で解除します。
+            <ol>
+              <li>ストレージ アカウントの左メニューで <b>セキュリティとネットワーク</b> → <b>ネットワーク</b> を選択します。</li>
+              <li><b>パブリック ネットワーク アクセス</b> で <b>すべてのネットワークから有効</b> を選択します（または <b>選択した仮想ネットワークと IP アドレスから有効</b> のまま、<b>ファイアウォール</b> の <b>クライアント IP アドレスを追加する</b> を選択して自分の IP を許可します）。</li>
+              <li><b>保存</b> を選択し、数分待ってからコンテナーを開き直します。</li>
+            </ol>
+            <p style="margin-bottom:0;"><b>Note（Azure Policy でパブリック アクセスが無効な環境）</b>: 組織の <b>Azure Policy</b> によって <b>パブリック ネットワーク アクセス = 無効（Disabled）</b> が強制され、自分の権限で変更できない場合は、上記の手順でも有効化できません。この場合は <b>コンテナー作成まで（前の手順まで）で完了として構いません</b>。以降のアップロード手順は任意です。どうしても実施したい場合は、管理者に Policy の除外（例外）を依頼するか、ストレージにプライベート エンドポイントを構成して Task 3 の VM 内から実施してください。</p>
+          </div>
+        </li>
+        <li>（任意）任意のファイル（テキスト ファイルや画像など、何でも構いません）を選び、<b>アップロード</b> を選択します。</li>
+        <li>アップロードした Blob が一覧に表示されることを確認します。Blob を選択すると、サイズ・アクセス層・URL などのプロパティを確認できます。
+          <div class="adm tip"><span class="adm-label">ポイント</span><b>アクセス層（ホット / クール / コールド / アーカイブ）</b> を切り替えると、アクセス頻度に応じてストレージ コストを最適化できます。</div>
+        </li>
+      </ol>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 5 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- ============ TASK 6 ============ -->
+  <div class="task" id="task6">
+    <div class="task-head">
+      <div class="task-num">6</div>
+      <div class="task-title">
+        <h3>リソースをまとめて削除する（重要）</h3>
+        <span class="time">⏱ 約 12 分</span>
+      </div>
+      <span class="task-chevron">▶</span>
+    </div>
+    <div class="task-body">
+      <div class="task-intro">Azure では、リソースが存在する限り課金が発生する場合があります。ハンズオンの最後は <b>必ずクリーンアップ</b> を行い、余計な費用が発生しないようにします。Task 1 で専用のリソース グループを作ったので、それを削除するだけで VNet・VM・NSG・ストレージがすべて消えます。</div>
+      <ol class="steps">
+        <li>ポータルの検索ボックスで <code>リソース グループ</code> を検索し、<b>rg-az104-userNN</b>（自分のリソース グループ）を開きます。</li>
+        <li>上部メニューで <b>リソース グループの削除</b> を選択します。</li>
+        <li>確認画面で、削除されるリソース（仮想ネットワーク、VM、ディスク、パブリック IP、NSG、ストレージ アカウントなど）が含まれていることを確認します。</li>
+        <li>指示に従ってリソース グループ名 <code>rg-az104-userNN</code>（自分のリソース グループ名）を入力し、<b>削除</b> を選択します。</li>
+        <li>数分後、リソース グループの一覧から <b>rg-az104-userNN</b> が消えていることを確認します。</li>
+      </ol>
+      <div class="adm warn"><span class="adm-label">ポイント</span>リソース グループを削除すると、その中のすべてのリソースが削除されます。残したいリソースがある場合は、削除前に別のリソース グループへ移動しておきます。</div>
+      <div class="complete-row"><label><input type="checkbox" class="task-done"> Task 6 を完了にする</label></div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" style="margin-top:28px;">
+    <h2>🎉 まとめ</h2>
+    <p>このハンズオンでは、Azure の基礎を約 90 分で一巡しました。</p>
+    <ul class="pillars">
+      <li><b>リソース グループ / タグ</b> … リソースを整理し、まとめて管理・削除する方法を学びました。</li>
+      <li><b>仮想ネットワーク（VNet）</b> … VNet とサブネットを設計し、リソースを配置する土台を作りました。</li>
+      <li><b>仮想マシン</b> … Linux VM を VNet 上に作成し、Web サーバーを構築しました。</li>
+      <li><b>ネットワーク（NSG）</b> … ポートを開放して通信を許可・制御する方法を学びました。</li>
+      <li><b>ストレージ</b> … Blob コンテナーにファイルを保存する方法を学びました。</li>
+      <li><b>クリーンアップ</b> … リソースを削除して課金を止める、運用で最も重要な習慣を身につけました。</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Lab 00 · 90分で学ぶ Azure の基礎 — AZ-104 入門ハンズオン</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "az104-lab00-progress";
+  var tasks = Array.prototype.slice.call(document.querySelectorAll(".task"));
+  var totalTasks = tasks.length;
+
+  // Load saved state
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) {}
+
+  function updateProgress() {
+    var done = tasks.filter(function (t) { return t.classList.contains("done"); }).length;
+    document.getElementById("progress-count").textContent = done;
+    document.getElementById("progress-fill").style.width = (done / totalTasks * 100) + "%";
+  }
+
+  function save() {
+    var state = {};
+    tasks.forEach(function (t) {
+      state[t.id] = {
+        open: t.classList.contains("open"),
+        done: t.classList.contains("done")
+      };
+    });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  tasks.forEach(function (task) {
+    var head = task.querySelector(".task-head");
+    var checkbox = task.querySelector(".task-done");
+    var st = saved[task.id] || {};
+
+    if (st.open) task.classList.add("open");
+    if (st.done) { task.classList.add("done"); if (checkbox) checkbox.checked = true; }
+
+    // Toggle open/close (ignore clicks on links)
+    head.addEventListener("click", function (e) {
+      task.classList.toggle("open");
+      save();
+    });
+
+    if (checkbox) {
+      checkbox.addEventListener("click", function (e) { e.stopPropagation(); });
+      checkbox.addEventListener("change", function () {
+        task.classList.toggle("done", checkbox.checked);
+        updateProgress();
+        save();
+      });
+    }
+  });
+
+  // Copy buttons
+  document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var code = btn.parentElement.querySelector("pre").textContent;
+      navigator.clipboard.writeText(code).then(function () {
+        var orig = btn.textContent;
+        btn.textContent = "コピー完了";
+        btn.classList.add("copied");
+        setTimeout(function () { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
+      });
+    });
+  });
+
+  // Reset
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("進捗をすべてリセットしますか？")) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    tasks.forEach(function (t) {
+      t.classList.remove("done", "open");
+      var cb = t.querySelector(".task-done");
+      if (cb) cb.checked = false;
+    });
+    updateProgress();
+  });
+
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
