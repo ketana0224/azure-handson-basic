@@ -340,6 +340,13 @@ Task 3 と同じく **Cloud Shell**（ポータル上部の `>_` アイコン、
     EOF
     ```
 
+    > **コマンドの解説**: このコマンドは、デプロイする Node.js アプリの中身を Cloud Shell 上で作成しています。
+    >
+    > - `mkdir -p ~/hello-appservice && cd ~/hello-appservice`: 作業用フォルダーを作り、その中に移動します。以降のファイルはここに作成されます。
+    > - `cat > index.js <<'EOF' ... EOF`: **ヒアドキュメント**という書き方で、`EOF` に挟まれた内容をそのまま `index.js` に書き込みます（`'EOF'` をシングルクォートで囲むと、`$PORT` などが展開されずそのまま書かれます）。
+    > - `index.js` の中身: Node.js 標準の `http` モジュールで簡単な Web サーバーを作っています。`process.env.PORT`（App Service が渡すポート番号）で待ち受け、アクセスされると **Hello Azure App Service! - web-app-az104-userNN** という HTML を返します。App Service は `PORT` 環境変数でアプリに待ち受けポートを指示するため、ローカルの固定ポートではなく `process.env.PORT` を使うのがポイントです。
+    > - `package.json`: Node.js アプリの設定ファイルです。`main` で起動ファイル（`index.js`）を、`scripts.start` で App Service が実行する起動コマンド（`node index.js`）を指定しています。App Service はデプロイ後、この `start` スクリプトでアプリを起動します。
+
 1. ファイルを ZIP にまとめ、App Service にデプロイします（`NN` は自分の番号に置き換えます）。
 
     ```bash
