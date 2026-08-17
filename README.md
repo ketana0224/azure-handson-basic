@@ -310,6 +310,19 @@ Task 3 の仮想マシン（IaaS）では OS のセットアップや NGINX の�
 
 Task 3 と同じく **Cloud Shell**（ポータル上部の `>_` アイコン、**Bash**）を使い、小さな Node.js アプリを作成して App Service にデプロイします。
 
+> **重要（サブスクリプションの確認）**: 複数のサブスクリプションを持っている場合、Cloud Shell が Web アプリを作成したサブスクリプションとは別のものを選択していることがあります。その状態でデプロイすると `(AuthorizationFailed) ... does not have authorization to perform action 'Microsoft.Web/sites/read'` というエラーになります。デプロイ前に、次のコマンドで **今のサブスクリプションを確認し、必要なら切り替え** ておきます。
+>
+> ```bash
+> # 現在のサブスクリプションを確認
+> az account show --query "{name:name, id:id}" -o table
+>
+> # 一覧から Web アプリを作ったサブスクリプションを確認
+> az account list --query "[].{name:name, id:id, isDefault:isDefault}" -o table
+>
+> # 必要なら切り替え（名前または ID を指定）
+> az account set --subscription "<サブスクリプション名 または ID>"
+> ```
+
 1. Cloud Shell で次のコマンドを実行し、サンプル アプリのファイルを作成します（`NN` は自分の受講者番号に置き換えます）。
 
     ```bash
@@ -339,6 +352,8 @@ Task 3 と同じく **Cloud Shell**（ポータル上部の `>_` アイコン、
     ```
 
     > **Note**: デプロイには 1〜2 分かかります。`az webapp deploy` が完了すると、App Service が自動でアプリを再起動します。
+
+    > **Note（AuthorizationFailed が出たら）**: `does not have authorization to perform action 'Microsoft.Web/sites/read'` が出る場合は、Cloud Shell のサブスクリプションが Web アプリを作成したものと違うのが原因です。上の「サブスクリプションの確認」で `az account set --subscription <正しいサブスクリプション>` に切り替えてから、`az resource list --name web-app-az104-userNN --resource-type Microsoft.Web/sites -o table` で Web アプリが見えることを確認し、再度デプロイします。
 
 1. ブラウザーで `https://web-app-az104-userNN.azurewebsites.net` を開き直し（または更新し）、**Hello Azure App Service! - web-app-az104-userNN** と表示されれば成功です。
 
